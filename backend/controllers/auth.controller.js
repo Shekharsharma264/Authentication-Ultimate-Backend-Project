@@ -23,10 +23,21 @@ export const signUp = async (req, res) => {
       userName,
     });
 
-    let token=generateToken(user._id)
-    console.log(user);
-    // yaha se aage likhna h
-    
+    let token;
+    try {
+      token = generateToken(user._id);
+      console.log(user);
+    } catch (error) {
+      console.log(error);
+    }
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENVIRONMENT == "production",
+      samesite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     return res.status(201).json({
       user: {
         name,
