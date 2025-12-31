@@ -1,6 +1,8 @@
+import cookieParser from "cookie-parser";
 import generateToken from "../config/token.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+
 export const signUp = async (req, res) => {
   try {
     const { name, email, password, userName } = req.body;
@@ -47,5 +49,47 @@ export const signUp = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: "internal server error." });
+  }
+};
+
+export const logIn = async (req, res) => {
+  try {
+    const { password, userName } = req.body;
+
+    let existUser = await User.findOne({ userName });
+
+    if (!existUser) {
+      return res.status(400).json({ message: "User does not exist." });
+    }
+
+    let matchPassword = await bcrypt.compare(password, existUser.password);
+
+    if (!matchPassword) {
+      return res.status(400).json({ message: "Incorrect Password" });
+    }
+
+    let token;
+    try {
+      token = generateToken(existUser._id);
+    } catch (error) {
+      console.log(error);
+    }
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENVIRONMENT == "production",
+      samesite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(201).json({
+      user: {
+        name:existUser.name,
+        email:existUser.email,
+        userName:existUser.userName,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
