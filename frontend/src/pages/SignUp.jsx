@@ -24,10 +24,10 @@ const SignUp = () => {
         },
         { withCredentials: true }
       );
+      alert("Successfully SignUp!!!")
       console.log(data.data);
     } catch (error) {
-      console.log(error.response?.data);
-      console.log(error.response?.status);
+      alert(error.data.response.message)
     }
   };
 
