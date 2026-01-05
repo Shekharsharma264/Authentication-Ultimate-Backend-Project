@@ -1,8 +1,10 @@
 import React, { useContext, useState } from "react";
 import { dataContext } from "../context/UserContext";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const LogIn = () => {
+  let navigate=useNavigate();
   let { serverUrl } = useContext(dataContext);
 
   const [password, setPassword] = useState("");
@@ -52,6 +54,8 @@ const LogIn = () => {
           <button className=" bg-black text-xl text-white px-10 py-2.5 rounded-3xl cursor-pointer">
             LogIn
           </button>
+
+          <p className=" cursor-pointer" onClick={()=>navigate("/signup")}>Create account? <span className=" text-[white]">SignUp</span></p>
         </form>
       </div>
     </div>

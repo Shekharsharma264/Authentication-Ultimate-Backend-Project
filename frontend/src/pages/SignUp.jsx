@@ -1,9 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import dp from "../assets/dp.webp";
 import { dataContext } from "../context/UserContext";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
+  let navigate=useNavigate();
   let { serverUrl } = useContext(dataContext);
 
   const [name, setName] = useState("");
@@ -11,18 +13,35 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [userName, setUserName] = useState("");
 
+  let [frontendImage,setFrontendImage]=useState(dp)
+  let [BackendImage,setBackendImage]=useState(null)
+
+  let file=useRef(null);
+
+  let handleImage=(e)=>{
+    let uploadedImage=e.target.files[0]
+    setBackendImage(uploadedImage)
+
+    let profileImage=URL.createObjectURL(uploadedImage)
+    setFrontendImage(profileImage)
+  }
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
+      let formData=new FormData()
+      formData.append("name",name)
+      formData.append("email",email)
+      formData.append("password",password)
+      formData.append("userName",userName)
+      if(BackendImage){
+        formData.append("profileImage",BackendImage)
+      }
+
       let data = await axios.post(
-        serverUrl + "/api/signup",
-        {
-          name,
-          email,
-          password,
-          userName,
-        },
-        { withCredentials: true }
+        serverUrl + "/api/signup",formData,
+        { withCredentials: true,
+          headers:{"Content-Type":"mulpart/form-data"}
+         }
       );
       alert("Successfully SignUp!!!")
       console.log(data.data);
@@ -40,9 +59,10 @@ const SignUp = () => {
           className="w-full flex flex-col justify-between items-center gap-5"
           onSubmit={handleSignup}
         >
+          <input type="file" hidden ref={file} onChange={handleImage}/>
           <div className="w-25 h-25 rounded-full bg-white overflow-hidden relative border-2 border-white">
-            <img src={dp} className="w-full h-full" />
-            <div className=" absolute w-full h-full bg-black top-0 opacity-0 hover:opacity-50 cursor-pointer flex justify-center items-center text-white text-3xl">
+            <img src={frontendImage} className="w-full h-full" />
+            <div className=" absolute w-full h-full bg-black top-0 opacity-0 hover:opacity-50 cursor-pointer flex justify-center items-center text-white text-3xl" onClick={()=>{file.current.click()}}>
               +
             </div>
           </div>
@@ -80,6 +100,8 @@ const SignUp = () => {
           <button className=" bg-black text-xl text-white px-10 py-2.5 rounded-3xl cursor-pointer">
             Sign Up
           </button>
+
+          <p className=" cursor-pointer" onClick={()=>navigate("/login")}>Already have an account? <span className=" text-[white]">LogIn</span></p>
         </form>
       </div>
     </div>

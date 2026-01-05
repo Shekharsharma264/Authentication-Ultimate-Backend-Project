@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import generateToken from "../config/token.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import uploadOnCloudinary from "../config/cloudinary.js";
 
 export const signUp = async (req, res) => {
   try {
@@ -10,6 +11,12 @@ export const signUp = async (req, res) => {
     if (!name || !email || !password || !userName) {
       return res.status(400).json({ message: "provide all details." });
     }
+
+    let profileImage;
+    if(req.file){
+      profileImage= await uploadOnCloudinary(req.file.path)
+    }
+
     let existUser = await User.findOne({ userName });
 
     if (existUser) {
@@ -23,6 +30,7 @@ export const signUp = async (req, res) => {
       email,
       password: hashedPassword,
       userName,
+      profileImage
     });
 
     let token;
@@ -45,6 +53,7 @@ export const signUp = async (req, res) => {
         name,
         email,
         userName,
+        profileImage
       },
     });
   } catch (error) {
@@ -86,7 +95,7 @@ export const logIn = async (req, res) => {
       user: {
         name:existUser.name,
         email:existUser.email,
-        userName:existUser.userName,
+        userName:existUser.userName
       },
     });
   } catch (error) {
